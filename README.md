@@ -1,2 +1,2 @@
-# sm-display-admins-by-groups
+# Description
 Display admins by groups.
