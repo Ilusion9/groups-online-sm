@@ -1,2 +1,2 @@
 # Description
-Display admins by groups.
+Display online admins by groups.
