@@ -1,14 +1,11 @@
 #include <sourcemod>
-#include <sdktools>
-#include <cstrike>
-
 #pragma newdecls required
 
 public Plugin myinfo =
 {
     name = "Display admins online",
     author = "Ilusion9",
-    description = "Display admins online by groups",
+    description = "Display online admins by groups",
     version = "1.0",
     url = "https://github.com/Ilusion9/"
 };
