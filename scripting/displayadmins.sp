@@ -21,7 +21,7 @@ ArrayList g_List_Groups;
 public void OnPluginStart()
 {
 	g_List_Groups = new ArrayList(sizeof(GroupInfo));
-	RegConsoleCmd("sm_admins", Command_Admins);
+	RegAdminCmd("sm_admins", Command_Admins, ADMFLAG_GENERIC, "Display online admins by groups");
 }
 
 public void OnConfigsExecuted()
