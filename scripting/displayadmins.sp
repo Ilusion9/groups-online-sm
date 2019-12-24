@@ -3,9 +3,9 @@
 
 public Plugin myinfo =
 {
-    name = "Display admins online",
+    name = "Display groups",
     author = "Ilusion9",
-    description = "Display online admins by groups",
+    description = "Display admins and vips by groups",
     version = "1.0",
     url = "https://github.com/Ilusion9/"
 };
@@ -16,31 +16,42 @@ enum struct GroupInfo
 	int flag;
 }
 
-ArrayList g_List_Groups;
+ArrayList g_List_AdminGroups;
+ArrayList g_List_VipGroups;
 
 public void OnPluginStart()
 {
-	g_List_Groups = new ArrayList(sizeof(GroupInfo));
-	RegAdminCmd("sm_admins", Command_Admins, ADMFLAG_GENERIC, "Display online admins by groups");
+	g_List_AdminGroups = new ArrayList(sizeof(GroupInfo));
+	g_List_VipGroups = new ArrayList(sizeof(GroupInfo));
+
+	RegConsoleCmd("sm_groups", Command_Groups);
 }
 
 public void OnConfigsExecuted()
 {
-	g_List_Groups.Clear();
+	g_List_AdminGroups.Clear();
+	g_List_VipGroups.Clear();
 	
 	char path[PLATFORM_MAX_PATH];	
-	BuildPath(Path_SM, path, sizeof(path), "configs/displayadmins.cfg");
-	KeyValues kv = new KeyValues("Display Admins"); 
+	BuildPath(Path_SM, path, sizeof(path), "configs/displaygroups.cfg");
+	KeyValues kv = new KeyValues("Groups"); 
 	
 	if (!kv.ImportFromFile(path))
 	{
-		LogError("The configuration file could not be read.");
 		delete kv;
+		LogError("The configuration file could not be read.");
 		return;
 	}
 	
 	GroupInfo group;
 	AdminFlag flag;
+	
+	if (!kv.JumpToKey("Admin Groups"))
+	{
+		delete kv;
+		LogError("The configuration file is corrupt (\"Admin Groups\" section could not be found).");
+		return;
+	}
 	
 	if (kv.GotoFirstSubKey(false))
 	{
@@ -57,7 +68,35 @@ public void OnConfigsExecuted()
 			}
 			
 			group.flag = FlagToBit(flag);
-			g_List_Groups.PushArray(group);
+			g_List_AdminGroups.PushArray(group);
+			
+		} while (kv.GotoNextKey(false));
+	}
+	
+	kv.Rewind();
+	if (!kv.JumpToKey("VIP Groups"))
+	{
+		delete kv;
+		LogError("The configuration file is corrupt (\"VIP Groups\" section could not be found).");
+		return;
+	}
+	
+	if (kv.GotoFirstSubKey(false))
+	{
+		do
+		{
+			kv.GetSectionName(group.name, sizeof(GroupInfo::name));
+			char value[2];
+			kv.GetString(NULL_STRING, value, sizeof(value));
+			
+			if (!FindFlagByChar(value[0], flag))
+			{
+				LogError("Invalid flag specified for group: %s", group.name);
+				continue;
+			}
+			
+			group.flag = FlagToBit(flag);
+			g_List_VipGroups.PushArray(group);
 			
 		} while (kv.GotoNextKey(false));
 	}
@@ -65,17 +104,17 @@ public void OnConfigsExecuted()
 	delete kv;
 }
 
-public Action Command_Admins(int client, int args)
+public Action Command_Groups(int client, int args)
 {
 	GroupInfo group;
-	bool adminDisplayed[MAXPLAYERS + 1];
+	bool adminDisplayed[MAXPLAYERS + 1], vipDisplayed[MAXPLAYERS + 1];
 	
-	for (int i = 0; i < g_List_Groups.Length; i++)
+	for (int i = 0; i < g_List_AdminGroups.Length; i++)
 	{
 		char buffer[256];
 		bool memberFound = false;
 		
-		g_List_Groups.GetArray(i, group);
+		g_List_AdminGroups.GetArray(i, group);
 		Format(buffer, sizeof(buffer), "%s:", group.name);
 		
 		for (int j = 1; j <= MaxClients; j++)
@@ -88,6 +127,37 @@ public Action Command_Admins(int client, int args)
 					{
 						memberFound = true;
 						adminDisplayed[j] = true;
+						Format(buffer, sizeof(buffer), "%s %N,", buffer, j);
+					}
+				}
+			}
+		}
+		
+		if (memberFound)
+		{
+			buffer[strlen(buffer) - 1] = 0;
+			ReplyToCommand(client, "[SM] %s", buffer);
+		}
+	}
+	
+	for (int i = 0; i < g_List_VipGroups.Length; i++)
+	{
+		char buffer[256];
+		bool memberFound = false;
+		
+		g_List_VipGroups.GetArray(i, group);
+		Format(buffer, sizeof(buffer), "%s:", group.name);
+		
+		for (int j = 1; j <= MaxClients; j++)
+		{
+			if (IsClientInGame(j))
+			{
+				if (!vipDisplayed[j])
+				{
+					if (CheckCommandAccess(j, "", group.flag, true))
+					{
+						memberFound = true;
+						vipDisplayed[j] = true;
 						Format(buffer, sizeof(buffer), "%s %N,", buffer, j);
 					}
 				}
