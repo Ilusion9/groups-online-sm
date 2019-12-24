@@ -10,13 +10,14 @@ public Plugin myinfo =
     url = "https://github.com/Ilusion9/"
 };
 
+#define MAX_GROUPS		65
 enum struct GroupInfo
 {
-	char name[65];
+	char name[32];
 	int flag;
 }
 
-GroupInfo g_Groups[65];
+GroupInfo g_Groups[MAX_GROUPS];
 int g_GroupsLength;
 int g_VipGroupIndex;
 
@@ -108,61 +109,59 @@ public void OnConfigsExecuted()
 
 public Action Command_Groups(int client, int args)
 {
-	bool adminDisplayed[MAXPLAYERS + 1], vipDisplayed[MAXPLAYERS + 1];
-	for (int groupIndex = 0; groupIndex < g_VipGroupIndex; groupIndex++)
+	int members[MAX_GROUPS][MAXPLAYERS + 1];
+	int length[MAX_GROUPS];
+	
+	for (int player = 1; player <= MaxClients; player++)
 	{
-		char buffer[256];
-		bool memberFound = false;
-		Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
-		
-		for (int clientEnt = 1; clientEnt <= MaxClients; clientEnt++)
+		if (IsClientInGame(player))
 		{
-			if (IsClientInGame(clientEnt))
+			bool assigned = false;
+			for (int groupIndex = 0; groupIndex < g_GroupsLength; groupIndex++)
 			{
-				if (!adminDisplayed[clientEnt])
+				if (groupIndex == g_VipGroupIndex)
 				{
-					if (CheckCommandAccess(clientEnt, "", g_Groups[groupIndex].flag, true))
+					assigned = false;
+				}
+				
+				if (!assigned)
+				{
+					if (CheckCommandAccess(player, "", g_Groups[groupIndex].flag, true))
 					{
-						memberFound = true;
-						adminDisplayed[clientEnt] = true;
-						Format(buffer, sizeof(buffer), "%s %N,", buffer, clientEnt);
+						assigned = true;
+						members[groupIndex][length[groupIndex]] = player;
+						length[groupIndex]++;
 					}
 				}
 			}
-		}
-		
-		if (memberFound)
-		{
-			buffer[strlen(buffer) - 1] = 0;
-			ReplyToCommand(client, "[SM] %s", buffer);
 		}
 	}
 	
-	for (int groupIndex = g_VipGroupIndex; groupIndex < g_GroupsLength; groupIndex++)
+	for (int groupIndex = 0; groupIndex < g_GroupsLength; groupIndex++)
 	{
-		char buffer[256];
-		bool memberFound = false;
-		Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
-		
-		for (int clientEnt = 1; clientEnt <= MaxClients; clientEnt++)
+		if (members[groupIndex][0])
 		{
-			if (IsClientInGame(clientEnt))
+			int msgLength;
+			char name[32], buffer[256];
+			
+			Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
+			msgLength = strlen(buffer);
+			
+			for (int i = 0; i < length[groupIndex]; i++)
 			{
-				if (!vipDisplayed[clientEnt])
+				GetClientName(members[groupIndex][i], name, sizeof(name));
+				msgLength += strlen(name) + 2;
+				
+				if (msgLength > 192)
 				{
-					if (CheckCommandAccess(clientEnt, "", g_Groups[groupIndex].flag, true))
-					{
-						memberFound = true;
-						vipDisplayed[clientEnt] = true;
-						Format(buffer, sizeof(buffer), "%s %N,", buffer, clientEnt);
-					}
+					ReplyToCommand(client, "[SM] %s", buffer);
+					Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
+					msgLength += strlen(buffer);
 				}
+				
+				Format(buffer, sizeof(buffer), "%s %s%s", buffer, name, (i < length[groupIndex] - 1) ? "," : "");
 			}
-		}
-		
-		if (memberFound)
-		{
-			buffer[strlen(buffer) - 1] = 0;
+			
 			ReplyToCommand(client, "[SM] %s", buffer);
 		}
 	}
