@@ -16,21 +16,19 @@ enum struct GroupInfo
 	int flag;
 }
 
-ArrayList g_List_AdminGroups;
-ArrayList g_List_VipGroups;
+GroupInfo g_Groups[65];
+int g_GroupsLength;
+int g_VipGroupIndex;
 
 public void OnPluginStart()
 {
-	g_List_AdminGroups = new ArrayList(sizeof(GroupInfo));
-	g_List_VipGroups = new ArrayList(sizeof(GroupInfo));
-
 	RegConsoleCmd("sm_groups", Command_Groups);
 }
 
 public void OnConfigsExecuted()
 {
-	g_List_AdminGroups.Clear();
-	g_List_VipGroups.Clear();
+	g_GroupsLength = 0;
+	g_VipGroupIndex = 0;
 	
 	char path[PLATFORM_MAX_PATH];	
 	BuildPath(Path_SM, path, sizeof(path), "configs/displaygroups.cfg");
@@ -68,12 +66,15 @@ public void OnConfigsExecuted()
 			}
 			
 			group.flag = FlagToBit(flag);
-			g_List_AdminGroups.PushArray(group);
+			g_Groups[g_GroupsLength] = group;
+			g_GroupsLength++;
 			
 		} while (kv.GotoNextKey(false));
 	}
 	
+	g_VipGroupIndex = g_GroupsLength;
 	kv.Rewind();
+	
 	if (!kv.JumpToKey("VIP Groups"))
 	{
 		delete kv;
@@ -96,7 +97,8 @@ public void OnConfigsExecuted()
 			}
 			
 			group.flag = FlagToBit(flag);
-			g_List_VipGroups.PushArray(group);
+			g_Groups[g_GroupsLength] = group;
+			g_GroupsLength++;
 			
 		} while (kv.GotoNextKey(false));
 	}
@@ -106,28 +108,24 @@ public void OnConfigsExecuted()
 
 public Action Command_Groups(int client, int args)
 {
-	GroupInfo group;
 	bool adminDisplayed[MAXPLAYERS + 1], vipDisplayed[MAXPLAYERS + 1];
-	
-	for (int i = 0; i < g_List_AdminGroups.Length; i++)
+	for (int groupIndex = 0; groupIndex < g_VipGroupIndex; groupIndex++)
 	{
 		char buffer[256];
 		bool memberFound = false;
+		Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
 		
-		g_List_AdminGroups.GetArray(i, group);
-		Format(buffer, sizeof(buffer), "%s:", group.name);
-		
-		for (int j = 1; j <= MaxClients; j++)
+		for (int clientEnt = 1; clientEnt <= MaxClients; clientEnt++)
 		{
-			if (IsClientInGame(j))
+			if (IsClientInGame(clientEnt))
 			{
-				if (!adminDisplayed[j])
+				if (!adminDisplayed[clientEnt])
 				{
-					if (CheckCommandAccess(j, "", group.flag, true))
+					if (CheckCommandAccess(clientEnt, "", g_Groups[groupIndex].flag, true))
 					{
 						memberFound = true;
-						adminDisplayed[j] = true;
-						Format(buffer, sizeof(buffer), "%s %N,", buffer, j);
+						adminDisplayed[clientEnt] = true;
+						Format(buffer, sizeof(buffer), "%s %N,", buffer, clientEnt);
 					}
 				}
 			}
@@ -140,25 +138,23 @@ public Action Command_Groups(int client, int args)
 		}
 	}
 	
-	for (int i = 0; i < g_List_VipGroups.Length; i++)
+	for (int groupIndex = g_VipGroupIndex; groupIndex < g_GroupsLength; groupIndex++)
 	{
 		char buffer[256];
 		bool memberFound = false;
+		Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
 		
-		g_List_VipGroups.GetArray(i, group);
-		Format(buffer, sizeof(buffer), "%s:", group.name);
-		
-		for (int j = 1; j <= MaxClients; j++)
+		for (int clientEnt = 1; clientEnt <= MaxClients; clientEnt++)
 		{
-			if (IsClientInGame(j))
+			if (IsClientInGame(clientEnt))
 			{
-				if (!vipDisplayed[j])
+				if (!vipDisplayed[clientEnt])
 				{
-					if (CheckCommandAccess(j, "", group.flag, true))
+					if (CheckCommandAccess(clientEnt, "", g_Groups[groupIndex].flag, true))
 					{
 						memberFound = true;
-						vipDisplayed[j] = true;
-						Format(buffer, sizeof(buffer), "%s %N,", buffer, j);
+						vipDisplayed[clientEnt] = true;
+						Format(buffer, sizeof(buffer), "%s %N,", buffer, clientEnt);
 					}
 				}
 			}
