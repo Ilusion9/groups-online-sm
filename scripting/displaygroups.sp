@@ -139,7 +139,7 @@ public Action Command_Groups(int client, int args)
 	
 	for (int groupIndex = 0; groupIndex < g_GroupsLength; groupIndex++)
 	{
-		if (members[groupIndex][0])
+		if (length[groupIndex])
 		{
 			int msgLength;
 			char name[32], buffer[256];
