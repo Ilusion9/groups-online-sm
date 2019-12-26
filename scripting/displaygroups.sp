@@ -23,7 +23,7 @@ int g_VipGroupIndex;
 
 public void OnPluginStart()
 {
-	RegConsoleCmd("sm_groups", Command_Groups);
+	RegAdminCmd("sm_groups", Command_Groups, ADMFLAG_GENERIC, "Display admins and vips by groups");
 }
 
 public void OnConfigsExecuted()
