@@ -33,7 +33,7 @@ public void OnConfigsExecuted()
 	g_FirstVipGroupIndex = 0;
 	
 	char path[PLATFORM_MAX_PATH];	
-	BuildPath(Path_SM, path, sizeof(path), "configs/displaygroups.cfg");
+	BuildPath(Path_SM, path, sizeof(path), "configs/sm_admins_command.cfg");
 	KeyValues kv = new KeyValues("Groups"); 
 	
 	if (!kv.ImportFromFile(path))
