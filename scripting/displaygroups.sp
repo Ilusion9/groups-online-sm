@@ -110,7 +110,7 @@ public void OnConfigsExecuted()
 
 public Action Command_Groups(int client, int args)
 {
-	if (!g_Groups.Length)
+	if (!g_GroupsArrayLength)
 	{
 		return Plugin_Handled;
 	}
@@ -123,19 +123,19 @@ public Action Command_Groups(int client, int args)
 	{
 		if (IsClientInGame(player))
 		{
-			bool assigned = false;
+			bool isAssigned = false;
 			for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
 			{
 				if (groupIndex == g_FirstVipGroupIndex)
 				{
-					assigned = false;
+					isAssigned = false;
 				}
 				
-				if (!assigned)
+				if (!isAssigned)
 				{
 					if (CheckCommandAccess(player, "", g_Groups[groupIndex].flag, true))
 					{
-						admins = true;
+						isAssigned = true;
 						membersOnline = true;
 						groupMembers[groupIndex][groupCount[groupIndex]] = player;
 						groupCount[groupIndex]++;
@@ -147,7 +147,7 @@ public Action Command_Groups(int client, int args)
 	
 	if (!membersOnline)
 	{
-		ReplyToCommand("[SM] %t", "No Members Online");
+		ReplyToCommand(client, "[SM] %t", "No Members Online");
 		return Plugin_Handled;
 	}
 	
@@ -173,7 +173,7 @@ public Action Command_Groups(int client, int args)
 					msgLength += strlen(buffer);
 				}
 				
-				Format(buffer, sizeof(buffer), "%s %s%s", buffer, name, (index < length[groupIndex] - 1) ? "," : "");
+				Format(buffer, sizeof(buffer), "%s %s%s", buffer, name, (index < groupCount[groupIndex] - 1) ? "," : "");
 			}
 			
 			ReplyToCommand(client, "[SM] %s", buffer);
