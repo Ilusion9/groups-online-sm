@@ -18,18 +18,19 @@ enum struct GroupInfo
 }
 
 GroupInfo g_Groups[MAX_GROUPS];
-int g_GroupsLength;
-int g_VipGroupIndex;
+int g_GroupsArrayLength;
+int g_FirstVipGroupIndex;
 
 public void OnPluginStart()
 {
+	LoadTranslations("displaygroups.phrases");
 	RegAdminCmd("sm_groups", Command_Groups, ADMFLAG_GENERIC, "Display admins and vips by groups");
 }
 
 public void OnConfigsExecuted()
 {
-	g_GroupsLength = 0;
-	g_VipGroupIndex = 0;
+	g_GroupsArrayLength = 0;
+	g_FirstVipGroupIndex = 0;
 	
 	char path[PLATFORM_MAX_PATH];	
 	BuildPath(Path_SM, path, sizeof(path), "configs/displaygroups.cfg");
@@ -67,13 +68,13 @@ public void OnConfigsExecuted()
 			}
 			
 			group.flag = FlagToBit(flag);
-			g_Groups[g_GroupsLength] = group;
-			g_GroupsLength++;
+			g_Groups[g_GroupsArrayLength] = group;
+			g_GroupsArrayLength++;
 			
 		} while (kv.GotoNextKey(false));
 	}
 	
-	g_VipGroupIndex = g_GroupsLength;
+	g_FirstVipGroupIndex = g_GroupsArrayLength;
 	kv.Rewind();
 	
 	if (!kv.JumpToKey("VIP Groups"))
@@ -98,8 +99,8 @@ public void OnConfigsExecuted()
 			}
 			
 			group.flag = FlagToBit(flag);
-			g_Groups[g_GroupsLength] = group;
-			g_GroupsLength++;
+			g_Groups[g_GroupsArrayLength] = group;
+			g_GroupsArrayLength++;
 			
 		} while (kv.GotoNextKey(false));
 	}
@@ -109,17 +110,23 @@ public void OnConfigsExecuted()
 
 public Action Command_Groups(int client, int args)
 {
-	int members[MAX_GROUPS][MAXPLAYERS + 1];
-	int length[MAX_GROUPS];
+	if (!g_Groups.Length)
+	{
+		return Plugin_Handled;
+	}
+	
+	bool membersOnline = false;
+	int groupCount[MAX_GROUPS];
+	int groupMembers[MAX_GROUPS][MAXPLAYERS + 1];
 	
 	for (int player = 1; player <= MaxClients; player++)
 	{
 		if (IsClientInGame(player))
 		{
 			bool assigned = false;
-			for (int groupIndex = 0; groupIndex < g_GroupsLength; groupIndex++)
+			for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
 			{
-				if (groupIndex == g_VipGroupIndex)
+				if (groupIndex == g_FirstVipGroupIndex)
 				{
 					assigned = false;
 				}
@@ -128,18 +135,25 @@ public Action Command_Groups(int client, int args)
 				{
 					if (CheckCommandAccess(player, "", g_Groups[groupIndex].flag, true))
 					{
-						assigned = true;
-						members[groupIndex][length[groupIndex]] = player;
-						length[groupIndex]++;
+						admins = true;
+						membersOnline = true;
+						groupMembers[groupIndex][groupCount[groupIndex]] = player;
+						groupCount[groupIndex]++;
 					}
 				}
 			}
 		}
 	}
 	
-	for (int groupIndex = 0; groupIndex < g_GroupsLength; groupIndex++)
+	if (!membersOnline)
 	{
-		if (length[groupIndex])
+		ReplyToCommand("[SM] %t", "No Members Online");
+		return Plugin_Handled;
+	}
+	
+	for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
+	{
+		if (groupCount[groupIndex])
 		{
 			int msgLength;
 			char name[32], buffer[256];
@@ -147,9 +161,9 @@ public Action Command_Groups(int client, int args)
 			Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
 			msgLength = strlen(buffer);
 			
-			for (int i = 0; i < length[groupIndex]; i++)
+			for (int index = 0; index < groupCount[groupIndex]; index++)
 			{
-				GetClientName(members[groupIndex][i], name, sizeof(name));
+				GetClientName(groupMembers[groupIndex][index], name, sizeof(name));
 				msgLength += strlen(name) + 2;
 				
 				if (msgLength > 192)
@@ -159,7 +173,7 @@ public Action Command_Groups(int client, int args)
 					msgLength += strlen(buffer);
 				}
 				
-				Format(buffer, sizeof(buffer), "%s %s%s", buffer, name, (i < length[groupIndex] - 1) ? "," : "");
+				Format(buffer, sizeof(buffer), "%s %s%s", buffer, name, (index < length[groupIndex] - 1) ? "," : "");
 			}
 			
 			ReplyToCommand(client, "[SM] %s", buffer);
