@@ -3,7 +3,7 @@
 
 public Plugin myinfo =
 {
-    name = "Display groups",
+    name = "Display Admins",
     author = "Ilusion9",
     description = "Display admins and vips by groups",
     version = "1.0",
@@ -23,8 +23,8 @@ int g_FirstVipGroupIndex;
 
 public void OnPluginStart()
 {
-	LoadTranslations("displaygroups.phrases");
-	RegAdminCmd("sm_groups", Command_Groups, ADMFLAG_GENERIC, "Display admins and vips by groups");
+	LoadTranslations("sm_admins.phrases");
+	RegAdminCmd("sm_admins", Command_Admins, ADMFLAG_GENERIC, "Display admins and vips by groups");
 }
 
 public void OnConfigsExecuted()
@@ -108,7 +108,7 @@ public void OnConfigsExecuted()
 	delete kv;
 }
 
-public Action Command_Groups(int client, int args)
+public Action Command_Admins(int client, int args)
 {
 	if (!g_GroupsArrayLength)
 	{
@@ -147,7 +147,7 @@ public Action Command_Groups(int client, int args)
 	
 	if (!membersOnline)
 	{
-		ReplyToCommand(client, "[SM] %t", "No Members Online");
+		ReplyToCommand(client, "[SM] %t", "No Admins Online");
 		return Plugin_Handled;
 	}
 	
