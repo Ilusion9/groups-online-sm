@@ -2,6 +2,6 @@
 {
 	"No Members Online"
 	{
-		"en"			"No members online."
+		"en"			"No groups members online."
 	}
 }
