@@ -23,7 +23,7 @@ int g_FirstVipGroupIndex;
 
 public void OnPluginStart()
 {
-	LoadTranslations("sm_admins.phrases");
+	LoadTranslations("command_show_admins.phrases");
 	RegAdminCmd("sm_admins", Command_Admins, ADMFLAG_GENERIC, "Display online admins and vips by groups");
 }
 
@@ -33,7 +33,7 @@ public void OnConfigsExecuted()
 	g_FirstVipGroupIndex = 0;
 	
 	char path[PLATFORM_MAX_PATH];	
-	BuildPath(Path_SM, path, sizeof(path), "configs/sm_admins_command.cfg");
+	BuildPath(Path_SM, path, sizeof(path), "configs/command_show_admins.cfg");
 	KeyValues kv = new KeyValues("Groups"); 
 	
 	if (!kv.ImportFromFile(path))
