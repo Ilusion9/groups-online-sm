@@ -1,7 +1,0 @@
-"Phrases"
-{
-	"No Members Online"
-	{
-		"en"			"No members online."
-	}
-}

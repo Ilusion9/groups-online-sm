@@ -1,0 +1,7 @@
+"Phrases"
+{
+	"No Admins Online"
+	{
+		"en"			"No admins online."
+	}
+}
