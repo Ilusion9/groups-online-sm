@@ -5,7 +5,7 @@ public Plugin myinfo =
 {
     name = "Display Admins",
     author = "Ilusion9",
-    description = "Display admins and vips by groups",
+    description = "Display online admins and vips by groups",
     version = "1.0",
     url = "https://github.com/Ilusion9/"
 };
@@ -24,7 +24,7 @@ int g_FirstVipGroupIndex;
 public void OnPluginStart()
 {
 	LoadTranslations("sm_admins.phrases");
-	RegAdminCmd("sm_admins", Command_Admins, ADMFLAG_GENERIC, "Display admins and vips by groups");
+	RegAdminCmd("sm_admins", Command_Admins, ADMFLAG_GENERIC, "Display online admins and vips by groups");
 }
 
 public void OnConfigsExecuted()
