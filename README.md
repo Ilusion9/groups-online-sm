@@ -7,4 +7,5 @@ https://forums.alliedmods.net/showthread.php?p=2677809
 # Commands
 ```
 sm_admins
+sm_vips
 ```
