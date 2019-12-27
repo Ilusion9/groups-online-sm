@@ -3,9 +3,9 @@
 
 public Plugin myinfo =
 {
-    name = "Display Admins",
+    name = "Show Admins",
     author = "Ilusion9",
-    description = "Display online admins by groups",
+    description = "Show online admins by groups",
     version = "1.0",
     url = "https://github.com/Ilusion9/"
 };
@@ -22,8 +22,8 @@ int g_GroupsArrayLength;
 
 public void OnPluginStart()
 {
-	LoadTranslations("display_admins_vips.phrases");
-	RegAdminCmd("sm_admins", Command_Admins, ADMFLAG_GENERIC, "Display online admins by groups");
+	LoadTranslations("show_admins_vips.phrases");
+	RegAdminCmd("sm_admins", Command_Admins, ADMFLAG_GENERIC, "Show online admins by groups");
 }
 
 public void OnConfigsExecuted()
@@ -31,7 +31,7 @@ public void OnConfigsExecuted()
 	g_GroupsArrayLength = 0;
 	
 	char path[PLATFORM_MAX_PATH];	
-	BuildPath(Path_SM, path, sizeof(path), "configs/display_admins_vips.cfg");
+	BuildPath(Path_SM, path, sizeof(path), "configs/show_admins_vips.cfg");
 	KeyValues kv = new KeyValues("Groups"); 
 	
 	if (!kv.ImportFromFile(path))
