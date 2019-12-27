@@ -3,9 +3,9 @@
 
 public Plugin myinfo =
 {
-    name = "Display Vips",
+    name = "Show Vips",
     author = "Ilusion9",
-    description = "Display online vips by groups",
+    description = "Show online vips by groups",
     version = "1.0",
     url = "https://github.com/Ilusion9/"
 };
@@ -22,8 +22,8 @@ int g_GroupsArrayLength;
 
 public void OnPluginStart()
 {
-	LoadTranslations("display_admins_vips.phrases");
-	RegConsoleCmd("sm_vips", Command_Vips, "Display online vips by groups");
+	LoadTranslations("show_admins_vips.phrases");
+	RegConsoleCmd("sm_vips", Command_Vips, "Show online vips by groups");
 }
 
 public void OnConfigsExecuted()
@@ -31,7 +31,7 @@ public void OnConfigsExecuted()
 	g_GroupsArrayLength = 0;
 	
 	char path[PLATFORM_MAX_PATH];	
-	BuildPath(Path_SM, path, sizeof(path), "configs/display_admins_vips.cfg");
+	BuildPath(Path_SM, path, sizeof(path), "configs/show_admins_vips.cfg");
 	KeyValues kv = new KeyValues("Groups"); 
 	
 	if (!kv.ImportFromFile(path))
