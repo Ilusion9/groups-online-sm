@@ -4,4 +4,9 @@
 	{
 		"en"			"No admins online."
 	}
+	
+	"No Vips Online"
+	{
+		"en"			"No VIPs online."
+	}
 }
