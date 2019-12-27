@@ -29,7 +29,6 @@ public void OnPluginStart()
 public void OnConfigsExecuted()
 {
 	g_GroupsArrayLength = 0;
-	g_FirstVipGroupIndex = 0;
 	
 	char path[PLATFORM_MAX_PATH];	
 	BuildPath(Path_SM, path, sizeof(path), "configs/display_admins_vips.cfg");
