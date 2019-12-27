@@ -1,5 +1,5 @@
 # Description
-Display online admins and vips by groups.
+Show online admins and vips by groups.
 
 # Alliedmods
 https://forums.alliedmods.net/showthread.php?p=2677809
