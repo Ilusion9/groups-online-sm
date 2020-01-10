@@ -3,7 +3,7 @@
 
 public Plugin myinfo =
 {
-    name = "Show Vips",
+    name = "Show Online Vips",
     author = "Ilusion9",
     description = "Show online vips by groups",
     version = "1.0",
@@ -13,7 +13,7 @@ public Plugin myinfo =
 #define MAX_GROUPS		65
 enum struct GroupInfo
 {
-	char name[32];
+	char name[33];
 	int flag;
 }
 
@@ -22,7 +22,7 @@ int g_GroupsArrayLength;
 
 public void OnPluginStart()
 {
-	LoadTranslations("show_admins_vips.phrases");
+	LoadTranslations("admins_vips_online.phrases");
 	RegConsoleCmd("sm_vips", Command_Vips, "Show online vips by groups");
 }
 
@@ -31,7 +31,7 @@ public void OnConfigsExecuted()
 	g_GroupsArrayLength = 0;
 	
 	char path[PLATFORM_MAX_PATH];	
-	BuildPath(Path_SM, path, sizeof(path), "configs/show_admins_vips.cfg");
+	BuildPath(Path_SM, path, sizeof(path), "configs/admins_vips_online.cfg");
 	KeyValues kv = new KeyValues("Groups"); 
 	
 	if (!kv.ImportFromFile(path))
