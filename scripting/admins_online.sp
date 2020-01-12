@@ -130,7 +130,7 @@ public Action Command_Admins(int client, int args)
 	
 	for (int player = 1; player <= MaxClients; player++)
 	{
-		if (!IsClientInGame(player))
+		if (!IsClientInGame(player) || IsFakeClient(player))
 		{
 			continue;
 		}
@@ -138,7 +138,12 @@ public Action Command_Admins(int client, int args)
 		bool isAssigned = false;
 		for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
 		{
-			if (isAssigned || !CheckCommandAccess(player, "", g_Groups[groupIndex].flag, true))
+			if (isAssigned)
+			{
+				break;
+			}
+			
+			if (!CheckCommandAccess(player, "", g_Groups[groupIndex].flag, true))
 			{
 				continue;
 			}
@@ -165,7 +170,7 @@ public Action Command_Admins(int client, int args)
 		}
 		
 		int msgLength, playersShown;
-		char name[32], buffer[256];
+		char name[33], buffer[256];
 		bool clientHasAccess = CheckCommandAccess(client, "", g_Groups[groupIndex].flag, true);
 		
 		Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
@@ -179,7 +184,6 @@ public Action Command_Admins(int client, int args)
 				continue;
 			}
 			
-			playersShown++;
 			membersOnline = true;
 			GetClientName(player, name, sizeof(name));
 			msgLength += strlen(name) + 2;
@@ -189,9 +193,11 @@ public Action Command_Admins(int client, int args)
 				ReplyToCommand(client, "[SM] %s", buffer);
 				Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
 				msgLength += strlen(buffer);
+				playersShown = 1;
 			}
 			
-			Format(buffer, sizeof(buffer), "%s%s %s", buffer, (playersShown != 1) ? "," : "", name);
+			Format(buffer, sizeof(buffer), "%s%s %s", buffer, playersShown ? "," : "", name);
+			playersShown++;
 		}
 		
 		if (playersShown)
