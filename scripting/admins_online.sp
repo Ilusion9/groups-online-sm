@@ -102,7 +102,7 @@ public Action Command_Admins(int client, int args)
 			else
 			{
 				g_IsHiddenAdmin[client] = false;
-				ReplyToCommand(client, "[SM] %t", "Visible from Admin Command");
+				ReplyToCommand(client, "[SM] %t", "Visible Admin Command");
 			}
 			
 			return Plugin_Handled;
@@ -117,7 +117,7 @@ public Action Command_Admins(int client, int args)
 			else
 			{
 				g_IsHiddenAdmin[client] = true;
-				ReplyToCommand(client, "[SM] %t", "Hidden from Admin Command");
+				ReplyToCommand(client, "[SM] %t", "Hidden Admin Command");
 			}
 			
 			return Plugin_Handled;
