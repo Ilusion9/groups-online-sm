@@ -88,22 +88,28 @@ public Action Command_Vips(int client, int args)
 	
 	for (int player = 1; player <= MaxClients; player++)
 	{
-		if (IsClientInGame(player))
+		if (!IsClientInGame(player) || IsFakeClient(player))
 		{
-			bool isAssigned = false;
-			for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
+			continue;
+		}
+		
+		bool isAssigned = false;
+		for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
+		{
+			if (isAssigned)
 			{
-				if (!isAssigned)
-				{
-					if (CheckCommandAccess(player, "", g_Groups[groupIndex].flag, true))
-					{
-						isAssigned = true;
-						membersOnline = true;
-						groupMembers[groupIndex][groupCount[groupIndex]] = player;
-						groupCount[groupIndex]++;
-					}
-				}
+				break;
 			}
+			
+			if (!CheckCommandAccess(player, "", g_Groups[groupIndex].flag, true))
+			{
+				continue;
+			}
+			
+			isAssigned = true;
+			membersOnline = true;
+			groupMembers[groupIndex][groupCount[groupIndex]] = player;
+			groupCount[groupIndex]++;
 		}
 	}
 	
@@ -118,7 +124,7 @@ public Action Command_Vips(int client, int args)
 		if (groupCount[groupIndex])
 		{
 			int msgLength;
-			char name[32], buffer[256];
+			char name[33], buffer[256];
 			
 			Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
 			msgLength = strlen(buffer);
@@ -135,7 +141,7 @@ public Action Command_Vips(int client, int args)
 					msgLength += strlen(buffer);
 				}
 				
-				Format(buffer, sizeof(buffer), "%s %s%s", buffer, name, (index < groupCount[groupIndex] - 1) ? "," : "");
+				Format(buffer, sizeof(buffer), "%s%s %s", buffer, index ? "," : "", name);
 			}
 			
 			ReplyToCommand(client, "[SM] %s", buffer);
