@@ -10,12 +10,12 @@
 		"en"			"No VIPs online."
 	}
 	
-	"Visible in Admin Command"
+	"Visible Admin Command"
 	{
 		"en"			"You will be visible in the admins list."
 	}
 	
-	"Hidden in Admin Command"
+	"Hidden Admin Command"
 	{
 		"en"			"You will be hidden in the admins list."
 	}
