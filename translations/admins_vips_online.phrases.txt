@@ -12,12 +12,12 @@
 	
 	"Visible Admin Command"
 	{
-		"en"			"You will be visible in the admins list."
+		"en"			"You are now visible in the admins list."
 	}
 	
 	"Hidden Admin Command"
 	{
-		"en"			"You will be hidden in the admins list."
+		"en"			"You will be hidden from the admins list."
 	}
 	
 	"No Feature Access"
