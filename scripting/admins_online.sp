@@ -97,12 +97,12 @@ public Action Command_Admins(int client, int args)
 		{
 			if (!IsClientMemberOfAnyGroup(client))
 			{
-				ReplyToCommand(client, "[SM] %t", "No Feature Access");
+				PrintToChat(client, "[\x05SourceTurk\x01]\x04 %t", "No Feature Access");
 			}
 			else
 			{
 				g_IsHiddenAdmin[client] = false;
-				ReplyToCommand(client, "[SM] %t", "Visible Admin Command");
+				PrintToChat(client, "[\x05SourceTurk\x01]\x04 %t", "Visible Admin Command");
 			}
 			
 			return Plugin_Handled;
@@ -112,12 +112,12 @@ public Action Command_Admins(int client, int args)
 		{
 			if (!IsClientMemberOfAnyGroup(client))
 			{
-				ReplyToCommand(client, "[SM] %t", "No Feature Access");
+				PrintToChat(client, "[\x05SourceTurk\x01]\x04 %t", "No Feature Access");
 			}
 			else
 			{
 				g_IsHiddenAdmin[client] = true;
-				ReplyToCommand(client, "[SM] %t", "Hidden Admin Command");
+				PrintToChat(client, "[\x05SourceTurk\x01]\x04 %t", "Hidden Admin Command");
 			}
 			
 			return Plugin_Handled;
@@ -157,7 +157,7 @@ public Action Command_Admins(int client, int args)
 	
 	if (!membersOnline)
 	{
-		ReplyToCommand(client, "[SM] %t", "No Admins Online");
+		PrintToChat(client, "[\x05SourceTurk\x01]\x04 %t", "No Admins Online");
 		return Plugin_Handled;
 	}
 	
@@ -173,7 +173,7 @@ public Action Command_Admins(int client, int args)
 		char name[33], buffer[256];
 		bool clientHasAccess = CheckCommandAccess(client, "", g_Groups[groupIndex].flag, true);
 		
-		Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
+		Format(buffer, sizeof(buffer), "\x07%s\x01:\x04", g_Groups[groupIndex].name);
 		msgLength = strlen(buffer);
 		
 		for (int index = 0; index < groupCount[groupIndex]; index++)
@@ -190,25 +190,25 @@ public Action Command_Admins(int client, int args)
 			
 			if (msgLength > 192)
 			{
-				ReplyToCommand(client, "[SM] %s", buffer);
-				Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
+				PrintToChat(client, "[\x05SourceTurk\x01]\x04 %s", buffer);
+				Format(buffer, sizeof(buffer), "\x07%s\x01:\x04", g_Groups[groupIndex].name);
 				msgLength += strlen(buffer);
 				playersShown = 1;
 			}
 			
-			Format(buffer, sizeof(buffer), "%s%s %s", buffer, playersShown ? "," : "", name);
+			Format(buffer, sizeof(buffer), "%s%s %s", buffer, playersShown ? "\x01,\x04" : "", name);
 			playersShown++;
 		}
 		
 		if (playersShown)
 		{
-			ReplyToCommand(client, "[SM] %s", buffer);
+			PrintToChat(client, "[\x05SourceTurk\x01]\x04 %s", buffer);
 		}
 	}
 	
 	if (!membersOnline)
 	{
-		ReplyToCommand(client, "[SM] %t", "No Admins Online");
+		PrintToChat(client, "[\x05SourceTurk\x01]\x04 %t", "No Admins Online");
 	}
 	
 	return Plugin_Handled;
