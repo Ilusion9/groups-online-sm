@@ -110,7 +110,7 @@ public Action Command_Vips(int client, int args)
 	
 	if (!membersOnline)
 	{
-		CReplyToCommand(client, "[SM] %t", "No Vips Online");
+		CReplyToCommand(client, "%t", "No Vips Online");
 		return Plugin_Handled;
 	}
 	
