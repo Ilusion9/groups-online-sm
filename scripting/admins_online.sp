@@ -1,4 +1,5 @@
 #include <sourcemod>
+#include <colorlib>
 #pragma newdecls required
 
 public Plugin myinfo =
@@ -13,7 +14,7 @@ public Plugin myinfo =
 #define MAX_GROUPS		65
 enum struct GroupInfo
 {
-	char name[33];
+	char name[64];
 	int flag;
 }
 
@@ -97,12 +98,12 @@ public Action Command_Admins(int client, int args)
 		{
 			if (!IsClientMemberOfAnyGroup(client))
 			{
-				ReplyToCommand(client, "[SM] %t", "No Feature Access");
+				CReplyToCommand(client, "[SM] %t", "No Feature Access");
 			}
 			else
 			{
 				g_IsHiddenAdmin[client] = false;
-				ReplyToCommand(client, "[SM] %t", "Visible Admin Command");
+				CReplyToCommand(client, "[SM] %t", "Visible Admin Command");
 			}
 			
 			return Plugin_Handled;
@@ -112,12 +113,12 @@ public Action Command_Admins(int client, int args)
 		{
 			if (!IsClientMemberOfAnyGroup(client))
 			{
-				ReplyToCommand(client, "[SM] %t", "No Feature Access");
+				cReplyToCommand(client, "[SM] %t", "No Feature Access");
 			}
 			else
 			{
 				g_IsHiddenAdmin[client] = true;
-				ReplyToCommand(client, "[SM] %t", "Hidden Admin Command");
+				CReplyToCommand(client, "[SM] %t", "Hidden Admin Command");
 			}
 			
 			return Plugin_Handled;
@@ -135,29 +136,23 @@ public Action Command_Admins(int client, int args)
 			continue;
 		}
 		
-		bool isAssigned = false;
 		for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
 		{
-			if (isAssigned)
-			{
-				break;
-			}
-			
 			if (!CheckCommandAccess(player, "", g_Groups[groupIndex].flag, true))
 			{
 				continue;
 			}
 			
-			isAssigned = true;
 			membersOnline = true;
 			groupMembers[groupIndex][groupCount[groupIndex]] = player;
 			groupCount[groupIndex]++;
+			break;
 		}
 	}
 	
 	if (!membersOnline)
 	{
-		ReplyToCommand(client, "[SM] %t", "No Admins Online");
+		CReplyToCommand(client, "[SM] %t", "No Admins Online");
 		return Plugin_Handled;
 	}
 	
@@ -173,7 +168,7 @@ public Action Command_Admins(int client, int args)
 		char name[33], buffer[256];
 		bool clientHasAccess = CheckCommandAccess(client, "", g_Groups[groupIndex].flag, true);
 		
-		Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
+		Format(buffer, sizeof(buffer), "%s", g_Groups[groupIndex].name);
 		msgLength = strlen(buffer);
 		
 		for (int index = 0; index < groupCount[groupIndex]; index++)
@@ -190,8 +185,8 @@ public Action Command_Admins(int client, int args)
 			
 			if (msgLength > 192)
 			{
-				ReplyToCommand(client, "[SM] %s", buffer);
-				Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
+				CReplyToCommand(client, "%s", buffer);
+				Format(buffer, sizeof(buffer), "%s", g_Groups[groupIndex].name);
 				msgLength += strlen(buffer);
 				playersShown = 1;
 			}
@@ -202,13 +197,13 @@ public Action Command_Admins(int client, int args)
 		
 		if (playersShown)
 		{
-			ReplyToCommand(client, "[SM] %s", buffer);
+			CReplyToCommand(client, "%s", buffer);
 		}
 	}
 	
 	if (!membersOnline)
 	{
-		ReplyToCommand(client, "[SM] %t", "No Admins Online");
+		CReplyToCommand(client, "[SM] %t", "No Admins Online");
 	}
 	
 	return Plugin_Handled;
