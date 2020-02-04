@@ -96,14 +96,14 @@ public Action Command_Admins(int client, int args)
 		
 		if (StrEqual(arg, "visible", false))
 		{
-			if (!IsClientMemberOfAnyGroup(client))
-			{
-				CReplyToCommand(client, "[SM] %t", "No Feature Access");
-			}
-			else
+			if (IsClientMemberOfAnyGroup(client))
 			{
 				g_IsHiddenAdmin[client] = false;
 				CReplyToCommand(client, "[SM] %t", "Visible Admin Command");
+			}
+			else
+			{
+				CReplyToCommand(client, "[SM] %t", "No Feature Access");
 			}
 			
 			return Plugin_Handled;
@@ -111,14 +111,14 @@ public Action Command_Admins(int client, int args)
 		
 		if (StrEqual(arg, "hidden", false))
 		{
-			if (!IsClientMemberOfAnyGroup(client))
-			{
-				CReplyToCommand(client, "[SM] %t", "No Feature Access");
-			}
-			else
+			if (IsClientMemberOfAnyGroup(client))
 			{
 				g_IsHiddenAdmin[client] = true;
 				CReplyToCommand(client, "[SM] %t", "Hidden Admin Command");
+			}
+			else
+			{
+				CReplyToCommand(client, "[SM] %t", "No Feature Access");
 			}
 			
 			return Plugin_Handled;
@@ -152,7 +152,7 @@ public Action Command_Admins(int client, int args)
 	
 	if (!membersOnline)
 	{
-		CReplyToCommand(client, "[SM] %t", "No Admins Online");
+		CReplyToCommand(client, "%t", "No Admins Online");
 		return Plugin_Handled;
 	}
 	
@@ -203,7 +203,7 @@ public Action Command_Admins(int client, int args)
 	
 	if (!membersOnline)
 	{
-		CReplyToCommand(client, "[SM] %t", "No Admins Online");
+		CReplyToCommand(client, "%t", "No Admins Online");
 	}
 	
 	return Plugin_Handled;
