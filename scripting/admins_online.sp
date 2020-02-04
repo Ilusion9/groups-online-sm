@@ -113,7 +113,7 @@ public Action Command_Admins(int client, int args)
 		{
 			if (!IsClientMemberOfAnyGroup(client))
 			{
-				cReplyToCommand(client, "[SM] %t", "No Feature Access");
+				CReplyToCommand(client, "[SM] %t", "No Feature Access");
 			}
 			else
 			{
