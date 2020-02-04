@@ -2,12 +2,12 @@
 {
 	"No Admins Online"
 	{
-		"en"			"{red}No admins online."
+		"en"			"No admins online."
 	}
 	
 	"No Vips Online"
 	{
-		"en"			"{red}No VIPs online."
+		"en"			"No VIPs online."
 	}
 	
 	"Visible Admin Command"
