@@ -1,4 +1,5 @@
 #include <sourcemod>
+#include <colorlib>
 #pragma newdecls required
 
 public Plugin myinfo =
@@ -13,7 +14,7 @@ public Plugin myinfo =
 #define MAX_GROUPS		65
 enum struct GroupInfo
 {
-	char name[33];
+	char name[64];
 	int flag;
 }
 
@@ -93,29 +94,23 @@ public Action Command_Vips(int client, int args)
 			continue;
 		}
 		
-		bool isAssigned = false;
 		for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
-		{
-			if (isAssigned)
-			{
-				break;
-			}
-			
+		{	
 			if (!CheckCommandAccess(player, "", g_Groups[groupIndex].flag, true))
 			{
 				continue;
 			}
 			
-			isAssigned = true;
 			membersOnline = true;
 			groupMembers[groupIndex][groupCount[groupIndex]] = player;
 			groupCount[groupIndex]++;
+			break;
 		}
 	}
 	
 	if (!membersOnline)
 	{
-		ReplyToCommand(client, "[SM] %t", "No Vips Online");
+		CReplyToCommand(client, "[SM] %t", "No Vips Online");
 		return Plugin_Handled;
 	}
 	
@@ -126,7 +121,7 @@ public Action Command_Vips(int client, int args)
 			int msgLength;
 			char name[33], buffer[256];
 			
-			Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
+			Format(buffer, sizeof(buffer), "%s", g_Groups[groupIndex].name);
 			msgLength = strlen(buffer);
 			
 			for (int index = 0; index < groupCount[groupIndex]; index++)
@@ -136,7 +131,7 @@ public Action Command_Vips(int client, int args)
 				
 				if (msgLength > 192)
 				{
-					ReplyToCommand(client, "[SM] %s", buffer);
+					CReplyToCommand(client, "%s", buffer);
 					Format(buffer, sizeof(buffer), "%s:", g_Groups[groupIndex].name);
 					msgLength += strlen(buffer);
 				}
@@ -144,7 +139,7 @@ public Action Command_Vips(int client, int args)
 				Format(buffer, sizeof(buffer), "%s%s %s", buffer, index ? "," : "", name);
 			}
 			
-			ReplyToCommand(client, "[SM] %s", buffer);
+			CReplyToCommand(client, "%s", buffer);
 		}
 	}
 	
