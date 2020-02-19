@@ -150,6 +150,7 @@ public Action Command_Vips(int client, int args)
 			for (int index = 0; index < groupCount[groupIndex]; index++)
 			{
 				GetClientName(groupMembers[groupIndex][index], name, sizeof(name));
+				CRemoveTags(name, sizeof(name));
 				msgLength += strlen(name) + 2;
 				
 				if (msgLength > 192)
