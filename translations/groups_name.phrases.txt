@@ -1,0 +1,22 @@
+"Phrases"
+{
+	"Owners"
+	{
+		"en"			"Owners"
+	}
+	
+	"Mods"
+	{
+		"en"			"Mods"
+	}
+	
+	"Helpers"
+	{
+		"en"			"Helpers"
+	}
+	
+	"VIPs"
+	{
+		"en"			"VIPs"
+	}
+}
