@@ -204,6 +204,7 @@ public Action Command_Admins(int client, int args)
 			
 			membersOnline = true;
 			GetClientName(player, name, sizeof(name));
+			CRemoveTags(name, sizeof(name));
 			msgLength += strlen(name) + 2;
 			
 			if (msgLength > 192)
