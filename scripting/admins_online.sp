@@ -14,9 +14,9 @@ public Plugin myinfo =
 #define MAX_GROUPS		65
 enum struct GroupInfo
 {
-	char name[64];
-	char color[64];
-	int flag;
+	char groupName[64];
+	char colorTag[16];
+	int uniqueFlag;
 	bool useTranslation;
 }
 
@@ -62,27 +62,19 @@ public void OnConfigsExecuted()
 		do
 		{
 			char buffer[65];
-			kv.GetSectionName(group.name, sizeof(GroupInfo::name));
+			kv.GetSectionName(group.groupName, sizeof(GroupInfo::groupName));
 			
 			kv.GetString("flag", buffer, sizeof(buffer));
 			if (!FindFlagByChar(buffer[0], flag))
 			{
-				LogError("Invalid flag specified for group: %s", group.name);
+				LogError("Invalid flag specified for group: %s", group.groupName);
 				continue;
 			}
 			
-			group.flag = FlagToBit(flag);
-			kv.GetString("color", group.color, sizeof(GroupInfo::color));
-			
+			group.uniqueFlag = FlagToBit(flag);
+			kv.GetString("color", group.colorTag, sizeof(GroupInfo::colorTag));
 			kv.GetString("translation", buffer, sizeof(buffer));
-			if (StrEqual(buffer, "yes", false))
-			{
-				group.useTranslation = true;
-			}
-			else
-			{
-				group.useTranslation = false;
-			}
+			group.useTranslation = StrEqual(buffer, "yes", false) ? true : false;
 			
 			g_Groups[g_GroupsArrayLength] = group;
 			g_GroupsArrayLength++;
@@ -154,7 +146,7 @@ public Action Command_Admins(int client, int args)
 		
 		for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
 		{
-			if (!CheckCommandAccess(player, "", g_Groups[groupIndex].flag, true))
+			if (!CheckCommandAccess(player, "", g_Groups[groupIndex].uniqueFlag, true))
 			{
 				continue;
 			}
@@ -180,20 +172,13 @@ public Action Command_Admins(int client, int args)
 			continue;
 		}
 		
-		int msgLength, playersShown;
-		char name[33], buffer[256];
-		bool clientHasAccess = CheckCommandAccess(client, "", g_Groups[groupIndex].flag, true);
+		int groupLength;
+		char clientName[32], groupName[32], buffer[256], oldBuffer[256];
 		
-		if (g_Groups[groupIndex].useTranslation)
-		{
-			Format(buffer, sizeof(buffer), "{%s}%t:{default}", g_Groups[groupIndex].color, g_Groups[groupIndex].name);
-		}
-		else
-		{
-			Format(buffer, sizeof(buffer), "{%s}%s:{default}", g_Groups[groupIndex].color, g_Groups[groupIndex].name);
-		}
+		bool playersShown;
+		bool clientHasAccess = CheckCommandAccess(client, "", g_Groups[groupIndex].uniqueFlag, true);
+		groupLength = Format(groupName, sizeof(groupName), g_Groups[groupIndex].useTranslation ? "%s%T:{default}" : "%s%s:{default}", g_Groups[groupIndex].colorTag, g_Groups[groupIndex].groupName, client);
 		
-		msgLength = strlen(buffer);
 		for (int index = 0; index < groupCount[groupIndex]; index++)
 		{
 			int player = groupMembers[groupIndex][index];
@@ -203,33 +188,28 @@ public Action Command_Admins(int client, int args)
 			}
 			
 			membersOnline = true;
-			GetClientName(player, name, sizeof(name));
-			CRemoveTags(name, sizeof(name));
-			msgLength += strlen(name) + 2;
+			playersShown = true;
+			GetClientName(player, clientName, sizeof(clientName));
 			
-			if (msgLength > 192)
+			if (buffer[0] == '\0')
 			{
-				CReplyToCommand(client, "%s", buffer);
-				if (g_Groups[groupIndex].useTranslation)
-				{
-					Format(buffer, sizeof(buffer), "{%s}%t:{default}", g_Groups[groupIndex].color, g_Groups[groupIndex].name);
-				}
-				else
-				{
-					Format(buffer, sizeof(buffer), "{%s}%s:{default}", g_Groups[groupIndex].color, g_Groups[groupIndex].name);
-				}
-				
-				msgLength += strlen(buffer);
-				playersShown = 1;
+				strcopy(buffer, sizeof(buffer), clientName);
+				continue;
 			}
 			
-			Format(buffer, sizeof(buffer), "%s%s %s", buffer, playersShown ? "," : "", name);
-			playersShown++;
+			int length = Format(buffer, sizeof(buffer), "%s, %s", buffer, clientName);
+			if (groupLength + length > 190)
+			{
+				CReplyToCommand(client, "%s %s", groupName, oldBuffer);
+				strcopy(buffer, sizeof(buffer), clientName);
+			}
+			
+			strcopy(oldBuffer, sizeof(oldBuffer), buffer);
 		}
 		
 		if (playersShown)
 		{
-			CReplyToCommand(client, "%s", buffer);
+			CReplyToCommand(client, "%s %s", groupName, buffer);
 		}
 	}
 	
@@ -245,7 +225,7 @@ bool IsClientMemberOfAnyGroup(int client)
 {
 	for (int i = 0; i < g_GroupsArrayLength; i++)
 	{
-		if (CheckCommandAccess(client, "", g_Groups[i].flag, true))
+		if (CheckCommandAccess(client, "", g_Groups[i].uniqueFlag, true))
 		{
 			return true;
 		}
