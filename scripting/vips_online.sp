@@ -14,9 +14,9 @@ public Plugin myinfo =
 #define MAX_GROUPS		65
 enum struct GroupInfo
 {
-	char name[64];
-	char color[64];
-	int flag;
+	char groupName[64];
+	char colorTag[16];
+	int uniqueFlag;
 	bool useTranslation;
 }
 
@@ -46,9 +46,6 @@ public void OnConfigsExecuted()
 		return;
 	}
 	
-	GroupInfo group;
-	AdminFlag flag;
-	
 	if (!kv.JumpToKey("VIP Groups"))
 	{
 		delete kv;
@@ -56,32 +53,27 @@ public void OnConfigsExecuted()
 		return;
 	}
 	
+	GroupInfo group;
+	AdminFlag flag;
+	
 	if (kv.GotoFirstSubKey(false))
 	{
 		do
 		{
 			char buffer[65];
-			kv.GetSectionName(group.name, sizeof(GroupInfo::name));
+			kv.GetSectionName(group.groupName, sizeof(GroupInfo::groupName));
 			
 			kv.GetString("flag", buffer, sizeof(buffer));
 			if (!FindFlagByChar(buffer[0], flag))
 			{
-				LogError("Invalid flag specified for group: %s", group.name);
+				LogError("Invalid flag specified for group: %s", group.groupName);
 				continue;
 			}
 			
-			group.flag = FlagToBit(flag);
-			kv.GetString("color", group.color, sizeof(GroupInfo::color));
-			
+			group.uniqueFlag = FlagToBit(flag);
+			kv.GetString("color", group.colorTag, sizeof(GroupInfo::colorTag));
 			kv.GetString("translation", buffer, sizeof(buffer));
-			if (StrEqual(buffer, "yes", false))
-			{
-				group.useTranslation = true;
-			}
-			else
-			{
-				group.useTranslation = false;
-			}
+			group.useTranslation = StrEqual(buffer, "yes", false) ? true : false;
 			
 			g_Groups[g_GroupsArrayLength] = group;
 			g_GroupsArrayLength++;
@@ -112,7 +104,7 @@ public Action Command_Vips(int client, int args)
 		
 		for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
 		{	
-			if (!CheckCommandAccess(player, "", g_Groups[groupIndex].flag, true))
+			if (!CheckCommandAccess(player, "", g_Groups[groupIndex].uniqueFlag, true))
 			{
 				continue;
 			}
@@ -132,48 +124,36 @@ public Action Command_Vips(int client, int args)
 	
 	for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
 	{
-		if (groupCount[groupIndex])
+		if (!groupCount[groupIndex])
 		{
-			int msgLength;
-			char name[33], buffer[256];
-			
-			if (g_Groups[groupIndex].useTranslation)
-			{
-				Format(buffer, sizeof(buffer), "{%s}%t:{default}", g_Groups[groupIndex].color, g_Groups[groupIndex].name);
-			}
-			else
-			{
-				Format(buffer, sizeof(buffer), "{%s}%s:{default}", g_Groups[groupIndex].color, g_Groups[groupIndex].name);
-			}
-			
-			msgLength = strlen(buffer);
-			for (int index = 0; index < groupCount[groupIndex]; index++)
-			{
-				GetClientName(groupMembers[groupIndex][index], name, sizeof(name));
-				CRemoveTags(name, sizeof(name));
-				msgLength += strlen(name) + 2;
-				
-				if (msgLength > 192)
-				{
-					CReplyToCommand(client, "%s", buffer);
-
-					if (g_Groups[groupIndex].useTranslation)
-					{
-						Format(buffer, sizeof(buffer), "{%s}%t:{default}", g_Groups[groupIndex].color, g_Groups[groupIndex].name);
-					}
-					else
-					{
-						Format(buffer, sizeof(buffer), "{%s}%s:{default}", g_Groups[groupIndex].color, g_Groups[groupIndex].name);
-					}
-					
-					msgLength += strlen(buffer);
-				}
-				
-				Format(buffer, sizeof(buffer), "%s%s %s", buffer, index ? "," : "", name);
-			}
-			
-			CReplyToCommand(client, "%s", buffer);
+			continue;
 		}
+		
+		int groupLength;
+		char clientName[32], groupName[32], buffer[256], oldBuffer[256];
+		groupLength = Format(groupName, sizeof(groupName), g_Groups[groupIndex].useTranslation ? "%s%T:{default}" : "%s%s:{default}", g_Groups[groupIndex].colorTag, g_Groups[groupIndex].groupName, client);
+
+		for (int index = 0; index < groupCount[groupIndex]; index++)
+		{
+			GetClientName(groupMembers[groupIndex][index], clientName, sizeof(clientName));
+			
+			if (buffer[0] == '\0')
+			{
+				strcopy(buffer, sizeof(buffer), clientName);
+				continue;
+			}
+			
+			int length = Format(buffer, sizeof(buffer), "%s, %s", buffer, clientName);
+			if (groupLength + length > 190)
+			{
+				CReplyToCommand(client, "%s %s", groupName, oldBuffer);
+				strcopy(buffer, sizeof(buffer), clientName);
+			}
+			
+			strcopy(oldBuffer, sizeof(oldBuffer), buffer);
+		}
+		
+		CReplyToCommand(client, "%s %s", groupName, buffer);
 	}
 	
 	return Plugin_Handled;
