@@ -129,7 +129,7 @@ stock void CShowActivity2(int client, const char[] tag, const char[] message, an
 stock int CPreFormat(char[] message)
 {
 	int index = 1;
-	message[0] = '\1';
+	message[0] = view_as<char>(0x01);
 	
 	if (GetEngineVersion() == Engine_CSGO)
 	{
