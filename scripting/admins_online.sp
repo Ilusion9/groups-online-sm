@@ -1,5 +1,5 @@
 #include <sourcemod>
-#include <colorlib>
+#include <colorlib_sample>
 #pragma newdecls required
 
 public Plugin myinfo =
@@ -15,7 +15,7 @@ public Plugin myinfo =
 enum struct GroupInfo
 {
 	char groupName[64];
-	char colorTag[16];
+	char colorHex;
 	int uniqueFlag;
 	bool useTranslation;
 }
@@ -47,15 +47,15 @@ public void OnConfigsExecuted()
 		return;
 	}
 	
-	GroupInfo group;
-	AdminFlag flag;
-	
 	if (!kv.JumpToKey("Admin Groups"))
 	{
 		delete kv;
 		LogError("The configuration file is corrupt (\"Admin Groups\" section could not be found).");
 		return;
 	}
+	
+	GroupInfo group;
+	AdminFlag flag;
 	
 	if (kv.GotoFirstSubKey(false))
 	{
@@ -72,7 +72,12 @@ public void OnConfigsExecuted()
 			}
 			
 			group.uniqueFlag = FlagToBit(flag);
-			kv.GetString("color", group.colorTag, sizeof(GroupInfo::colorTag));
+			kv.GetString("color", buffer, sizeof(buffer));
+			if (!CTranslateColor(buffer, group.colorHex))
+			{
+				group.colorHex = view_as<char>(0x01);
+			}
+			
 			kv.GetString("translation", buffer, sizeof(buffer));
 			group.useTranslation = StrEqual(buffer, "yes", false) ? true : false;
 			
@@ -165,6 +170,8 @@ public Action Command_Admins(int client, int args)
 	}
 	
 	membersOnline = false;
+	ReplySource replySource = GetCmdReplySource();
+
 	for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
 	{
 		if (!groupCount[groupIndex])
@@ -177,7 +184,14 @@ public Action Command_Admins(int client, int args)
 		
 		bool playersShown;
 		bool clientHasAccess = CheckCommandAccess(client, "", g_Groups[groupIndex].uniqueFlag, true);
-		groupLength = Format(groupName, sizeof(groupName), g_Groups[groupIndex].useTranslation ? "%s%T:{default}" : "%s%s:{default}", g_Groups[groupIndex].colorTag, g_Groups[groupIndex].groupName, client);
+		
+		if (replySource == SM_REPLY_TO_CHAT)
+		{
+			groupLength = CPreFormat(groupName);
+			groupName[groupLength] = g_Groups[groupIndex].colorHex;
+			groupLength++;
+		}
+		groupLength = Format(groupName[groupLength], sizeof(groupName) - groupLength, g_Groups[groupIndex].useTranslation ? "%T:\x01" : "%s:\x01", g_Groups[groupIndex].groupName, client);		
 		
 		for (int index = 0; index < groupCount[groupIndex]; index++)
 		{
@@ -200,7 +214,7 @@ public Action Command_Admins(int client, int args)
 			int length = Format(buffer, sizeof(buffer), "%s, %s", buffer, clientName);
 			if (groupLength + length > 190)
 			{
-				CReplyToCommand(client, "%s %s", groupName, oldBuffer);
+				ReplyToCommand(client, "%s %s", groupName, oldBuffer);
 				strcopy(buffer, sizeof(buffer), clientName);
 			}
 			
@@ -209,7 +223,7 @@ public Action Command_Admins(int client, int args)
 		
 		if (playersShown)
 		{
-			CReplyToCommand(client, "%s %s", groupName, buffer);
+			ReplyToCommand(client, "%s %s", groupName, buffer);
 		}
 	}
 	
