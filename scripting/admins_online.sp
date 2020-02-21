@@ -191,7 +191,7 @@ public Action Command_Admins(int client, int args)
 			groupName[groupLength] = g_Groups[groupIndex].colorHex;
 			groupLength++;
 		}
-		groupLength = Format(groupName[groupLength], sizeof(groupName) - groupLength, g_Groups[groupIndex].useTranslation ? "%T:\x01" : "%s:\x01", g_Groups[groupIndex].groupName, client);		
+		groupLength += Format(groupName[groupLength], sizeof(groupName) - groupLength, g_Groups[groupIndex].useTranslation ? "%T:\x01" : "%s:\x01", g_Groups[groupIndex].groupName, client);		
 		
 		for (int index = 0; index < groupCount[groupIndex]; index++)
 		{
