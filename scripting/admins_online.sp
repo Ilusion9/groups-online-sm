@@ -11,17 +11,17 @@ public Plugin myinfo =
     url = "https://github.com/Ilusion9/"
 };
 
-#define MAX_GROUPS		65
+#define MAX_CHATMESSAGE_LENGTH 190
 enum struct GroupInfo
 {
-	char groupName[64];
+	char groupName[32];
 	char colorHex;
 	int uniqueFlag;
 	bool useTranslation;
 }
 
 bool g_IsHiddenAdmin[MAXPLAYERS + 1];
-GroupInfo g_Groups[MAX_GROUPS];
+GroupInfo g_Groups[32];
 int g_GroupsArrayLength;
 
 public void OnPluginStart()
@@ -139,8 +139,8 @@ public Action Command_Admins(int client, int args)
 	}
 	
 	bool membersOnline = false;
-	int groupCount[MAX_GROUPS];
-	int groupMembers[MAX_GROUPS][MAXPLAYERS + 1];
+	int groupCount[sizeof(g_Groups)];
+	int groupMembers[sizeof(g_Groups)][MAXPLAYERS + 1];
 	
 	for (int player = 1; player <= MaxClients; player++)
 	{
@@ -170,6 +170,8 @@ public Action Command_Admins(int client, int args)
 	}
 	
 	membersOnline = false;
+	int groupLength, bufferLength, nameLength;
+	char clientName[32], groupName[32], buffer[256];
 	ReplySource replySource = GetCmdReplySource();
 
 	for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
@@ -179,10 +181,10 @@ public Action Command_Admins(int client, int args)
 			continue;
 		}
 		
-		int groupLength;
-		char clientName[32], groupName[32], buffer[256], oldBuffer[256];
+		nameLength = groupLength = bufferLength = 0;
+		strcopy(buffer, sizeof(buffer), "");
 		
-		bool playersShown;
+		bool playersShown = false;
 		bool clientHasAccess = CheckCommandAccess(client, "", g_Groups[groupIndex].uniqueFlag, true);
 		
 		if (replySource == SM_REPLY_TO_CHAT)
@@ -193,9 +195,9 @@ public Action Command_Admins(int client, int args)
 		}
 		groupLength += Format(groupName[groupLength], sizeof(groupName) - groupLength, g_Groups[groupIndex].useTranslation ? "%T:\x01" : "%s:\x01", g_Groups[groupIndex].groupName, client);		
 		
-		for (int index = 0; index < groupCount[groupIndex]; index++)
+		for (int memberIndex = 0; memberIndex < groupCount[groupIndex]; memberIndex++)
 		{
-			int player = groupMembers[groupIndex][index];
+			int player = groupMembers[groupIndex][memberIndex];
 			if (g_IsHiddenAdmin[player] && !clientHasAccess)
 			{
 				continue;
@@ -203,22 +205,25 @@ public Action Command_Admins(int client, int args)
 			
 			membersOnline = true;
 			playersShown = true;
-			GetClientName(player, clientName, sizeof(clientName));
+			
+			nameLength = Format(clientName, sizeof(clientName), "%N", player);
+			if (groupLength + bufferLength + nameLength > 190)
+			{
+				ReplyToCommand(client, "%s %s", groupName, buffer);
+				strcopy(buffer, sizeof(buffer), clientName);
+				bufferLength = nameLength;
+				continue;
+			}
 			
 			if (buffer[0] == '\0')
 			{
 				strcopy(buffer, sizeof(buffer), clientName);
-				continue;
+				bufferLength = nameLength;
 			}
-			
-			int length = Format(buffer, sizeof(buffer), "%s, %s", buffer, clientName);
-			if (groupLength + length > 190)
+			else
 			{
-				ReplyToCommand(client, "%s %s", groupName, oldBuffer);
-				strcopy(buffer, sizeof(buffer), clientName);
+				bufferLength = Format(buffer, sizeof(buffer), "%s, %s", buffer, clientName);
 			}
-			
-			strcopy(oldBuffer, sizeof(oldBuffer), buffer);
 		}
 		
 		if (playersShown)
