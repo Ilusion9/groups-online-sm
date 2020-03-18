@@ -1,5 +1,5 @@
 #include <sourcemod>
-#include <colorlib_sample>
+#include <multicolors>
 #pragma newdecls required
 
 public Plugin myinfo =
@@ -14,10 +14,8 @@ public Plugin myinfo =
 #define MAX_CHATMESSAGE_LENGTH 190
 enum struct GroupInfo
 {
-	char groupName[32];
-	char colorHex;
+	char groupPhrase[128];
 	int uniqueFlag;
-	bool useTranslation;
 }
 
 bool g_IsHiddenAdmin[MAXPLAYERS + 1];
@@ -62,24 +60,14 @@ public void OnConfigsExecuted()
 		do
 		{
 			char buffer[65];
-			kv.GetSectionName(group.groupName, sizeof(GroupInfo::groupName));
+			kv.GetSectionName(group.groupPhrase, sizeof(GroupInfo::groupPhrase));
 			
 			kv.GetString("flag", buffer, sizeof(buffer));
 			if (!FindFlagByChar(buffer[0], flag))
 			{
-				LogError("Invalid flag specified for group: %s", group.groupName);
+				LogError("Invalid flag specified for group: %s", group.groupPhrase);
 				continue;
 			}
-			
-			group.uniqueFlag = FlagToBit(flag);
-			kv.GetString("color", buffer, sizeof(buffer));
-			if (!CTranslateColor(buffer, group.colorHex))
-			{
-				group.colorHex = view_as<char>(0x01);
-			}
-			
-			kv.GetString("translation", buffer, sizeof(buffer));
-			group.useTranslation = StrEqual(buffer, "yes", false) ? true : false;
 			
 			g_Groups[g_GroupsArrayLength] = group;
 			g_GroupsArrayLength++;
@@ -172,7 +160,6 @@ public Action Command_Admins(int client, int args)
 	membersOnline = false;
 	int groupLength, bufferLength, nameLength;
 	char clientName[32], groupName[32], buffer[256];
-	ReplySource replySource = GetCmdReplySource();
 
 	for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
 	{
@@ -187,13 +174,9 @@ public Action Command_Admins(int client, int args)
 		bool playersShown = false;
 		bool clientHasAccess = CheckCommandAccess(client, "", g_Groups[groupIndex].uniqueFlag, true);
 		
-		if (replySource == SM_REPLY_TO_CHAT)
-		{
-			groupLength = CPreFormat(groupName);
-			groupName[groupLength] = g_Groups[groupIndex].colorHex;
-			groupLength++;
-		}
-		groupLength += Format(groupName[groupLength], sizeof(groupName) - groupLength, g_Groups[groupIndex].useTranslation ? "%T:\x01" : "%s:\x01", g_Groups[groupIndex].groupName, client);		
+		Format(groupName, sizeof(groupName), "%T", g_Groups[groupIndex].groupPhrase, client);
+		CFormatColor(groupName, sizeof(groupName));
+		groupLength = strlen(groupName);
 		
 		for (int memberIndex = 0; memberIndex < groupCount[groupIndex]; memberIndex++)
 		{
