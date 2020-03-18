@@ -2,21 +2,21 @@
 {
 	"Owners"
 	{
-		"en"			"Owners"
+		"en"			"{chocolate}Owners:{default}"
 	}
 	
 	"Mods"
 	{
-		"en"			"Mods"
+		"en"			"{green}Mods:{default}"
 	}
 	
 	"Helpers"
 	{
-		"en"			"Helpers"
+		"en"			"{orange}Helpers:{default}"
 	}
 	
 	"VIPs"
 	{
-		"en"			"VIPs"
+		"en"			"{green}VIPs:{default}"
 	}
 }
