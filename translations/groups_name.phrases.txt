@@ -2,7 +2,7 @@
 {
 	"Owners"
 	{
-		"en"			"{chocolate}Owners:{default}"
+		"en"			"{red}Owners:{default}"
 	}
 	
 	"Mods"
