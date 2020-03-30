@@ -51,7 +51,7 @@ public void OnConfigsExecuted()
 		return;
 	}
 	
-	char buffer[65];
+	char buffer[128];
 	GroupInfo group;	
 	
 	if (kv.GotoFirstSubKey(false))
