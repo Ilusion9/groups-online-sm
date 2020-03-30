@@ -1,5 +1,5 @@
 #include <sourcemod>
-#include <multicolors>
+#include <sourcecolors>
 #pragma newdecls required
 
 public Plugin myinfo =
@@ -14,11 +14,12 @@ public Plugin myinfo =
 enum struct GroupInfo
 {
 	char groupPhrase[128];
-	int uniqueFlag;
+	AdminFlag uniqueFlag;
 }
 
 GroupInfo g_Groups[32];
 int g_GroupsArrayLength;
+int g_GroupIndex[MAXPLAYERS + 1];
 
 public void OnPluginStart()
 {
@@ -50,18 +51,17 @@ public void OnConfigsExecuted()
 		return;
 	}
 	
-	GroupInfo group;
-	AdminFlag flag;
+	char buffer[65];
+	GroupInfo group;	
 	
 	if (kv.GotoFirstSubKey(false))
 	{
 		do
 		{
-			char buffer[65];
 			kv.GetSectionName(group.groupPhrase, sizeof(GroupInfo::groupPhrase));
-			
 			kv.GetString("flag", buffer, sizeof(buffer));
-			if (!FindFlagByChar(buffer[0], flag))
+			
+			if (!FindFlagByChar(buffer[0], group.uniqueFlag))
 			{
 				LogError("Invalid flag specified for group: %s", group.groupPhrase);
 				continue;
@@ -74,6 +74,43 @@ public void OnConfigsExecuted()
 	}
 	
 	delete kv;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			OnClientPostAdminCheck(i);
+		}
+	}
+}
+
+public void OnRebuildAdminCache(AdminCachePart part)
+{
+	OnConfigsExecuted();
+}
+
+public void OnClientPostAdminCheck(int client)
+{
+	g_GroupIndex[client] = -1;
+	
+	if (IsFakeClient(client))
+	{
+		return;
+	}
+	
+	AdminId admin_id = GetUserAdmin(client);
+	if (admin_id == INVALID_ADMIN_ID)
+	{
+		return;
+	}
+	
+	for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
+	{
+		if (GetAdminFlag(admin_id, g_Groups[groupIndex].uniqueFlag, Access_Effective))
+		{
+			g_GroupIndex[client] = groupIndex;
+			break;
+		}
+	}
 }
 
 public Action Command_Vips(int client, int args)
@@ -84,6 +121,7 @@ public Action Command_Vips(int client, int args)
 	}
 	
 	bool membersOnline = false;
+	int groupIndex, memberIndex;
 	int groupCount[sizeof(g_Groups)];
 	int groupMembers[sizeof(g_Groups)][MAXPLAYERS + 1];
 	
@@ -94,18 +132,15 @@ public Action Command_Vips(int client, int args)
 			continue;
 		}
 		
-		for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
-		{	
-			if (!CheckCommandAccess(player, "", g_Groups[groupIndex].uniqueFlag, true))
-			{
-				continue;
-			}
-			
-			membersOnline = true;
-			groupMembers[groupIndex][groupCount[groupIndex]] = player;
-			groupCount[groupIndex]++;
-			break;
+		groupIndex = g_GroupIndex[player];
+		if (groupIndex < 0)
+		{
+			continue;
 		}
+		
+		groupMembers[groupIndex][groupCount[groupIndex]] = player;
+		groupCount[groupIndex]++;
+		membersOnline = true;
 	}
 	
 	if (!membersOnline)
@@ -117,7 +152,7 @@ public Action Command_Vips(int client, int args)
 	int groupLength, bufferLength, nameLength;
 	char clientName[32], groupName[32], buffer[256];
 	
-	for (int groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
+	for (groupIndex = 0; groupIndex < g_GroupsArrayLength; groupIndex++)
 	{
 		if (!groupCount[groupIndex])
 		{
@@ -127,16 +162,13 @@ public Action Command_Vips(int client, int args)
 		nameLength = groupLength = bufferLength = 0;
 		strcopy(buffer, sizeof(buffer), "");
 		
-		Format(groupName, sizeof(groupName), "%T", g_Groups[groupIndex].groupPhrase, client);
-		CFormatColor(groupName, sizeof(groupName));
-		groupLength = strlen(groupName);
-		
-		for (int memberIndex = 0; memberIndex < groupCount[groupIndex]; memberIndex++)
+		groupLength = Format(groupName, sizeof(groupName), "%T", g_Groups[groupIndex].groupPhrase, client);
+		for (memberIndex = 0; memberIndex < groupCount[groupIndex]; memberIndex++)
 		{
 			nameLength = Format(clientName, sizeof(clientName), "%N", groupMembers[groupIndex][memberIndex]);
 			if (groupLength + bufferLength + nameLength > 190)
 			{
-				ReplyToCommand(client, "%s %s", groupName, buffer);
+				CReplyToCommand(client, "%s %s", groupName, buffer);
 				strcopy(buffer, sizeof(buffer), clientName);
 				bufferLength = nameLength;
 				continue;
@@ -153,7 +185,7 @@ public Action Command_Vips(int client, int args)
 			}
 		}
 		
-		ReplyToCommand(client, "%s %s", groupName, buffer);
+		CReplyToCommand(client, "%s %s", groupName, buffer);
 	}
 	
 	return Plugin_Handled;
