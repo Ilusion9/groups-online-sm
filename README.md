@@ -2,6 +2,9 @@
 Show online admins and vips by groups.
 Admins can hide their name from players with lower access (or regular players if the command is public).
 
+# Dependencies
+Sourcecolors - https://github.com/Ilusion9/sourcecolors-inc-sm
+
 # Alliedmods
 https://forums.alliedmods.net/showthread.php?p=2677809
 
