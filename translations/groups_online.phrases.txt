@@ -12,16 +12,16 @@
 	
 	"Visible Admin Command"
 	{
-		"en"			"{orange}You are now visible in the admins list."
+		"en"			"You are now visible in the admins list."
 	}
 	
 	"Hidden Admin Command"
 	{
-		"en"			"{orange}You will be hidden from the admins list."
+		"en"			"You will be hidden from the admins list."
 	}
 	
 	"No Feature Access"
 	{
-		"en"			"{red}You do not have access to this feature."
+		"en"			"You do not have access to this feature."
 	}
 }
